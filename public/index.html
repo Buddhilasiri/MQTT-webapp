@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT WebApp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>MQTT WebApp</h1>
+
+        <!-- Topic Subscription -->
+        <div class="form-group">
+            <label for="topic">Subscribe to Topics:</label>
+            <input type="text" id="topic" placeholder="Enter MQTT Topic">
+            <button id="subscribeBtn">Subscribe</button>
+        </div>
+
+        <!-- Subscribed Topics -->
+        <div class="subscribed-topics">
+            <h2>Subscribed Topics</h2>
+            <ul id="topics-list"></ul>
+        </div>
+
+        <!-- Filtering by Topic -->
+        <div class="form-group">
+            <label for="topicFilter">Filter by Topic:</label>
+            <input type="text" id="topicFilter" placeholder="Enter topic to filter">
+            <button id="filterBtn">Filter</button>
+        </div>
+        
+        <!-- Search for Messages -->
+        <div class="form-group">
+            <label for="searchInput">Search Messages:</label>
+            <input type="text" id="searchInput" placeholder="Enter keyword to search">
+            <button id="searchBtn">Search</button>
+        </div>
+
+        <!-- Clear filter button -->
+        <div class="form-group">
+            <button id="clearFilterBtn">Clear Filter</button>
+        </div>
+
+        <!-- Message Display -->
+        <div class="message-display">
+            <h2>Messages</h2>
+            <ul id="messages"></ul>
+        </div>
+
+        <!-- Real-Time Message Display -->
+        <div class="real-time-message-display">
+            <h2>Real-Time Messages</h2>
+            <ul id="realTimeMessages"></ul>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination">
+            <button id="prevBtn">Previous</button>
+            <span id="currentPage">Page 1</span>
+            <button id="nextBtn">Next</button>
+            <button id="refreshMessagesBtn">Refresh Messages</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+    
+        let currentPage = 1; // Current page tracker
+        let currentTopic = ''; // Filtered topic tracker
+    
+        // Subscribe to a topic
+        document.getElementById('subscribeBtn').addEventListener('click', () => {
+            const topic = document.getElementById('topic').value;
+            if (topic) {
+                socket.emit('subscribe', topic);
+                alert(`Subscribed to topic: ${topic}`);
+                
+                // Add the topic to the subscribed topics list
+                const topicsList = document.getElementById('topics-list');
+                const listItem = document.createElement('li');
+                listItem.textContent = topic;
+                topicsList.appendChild(listItem);
+                
+                // Clear the input field
+                document.getElementById('topic').value = '';
+            }
+        });
+
+        // Clear topic filter
+        document.getElementById('clearFilterBtn').addEventListener('click', () => {
+            currentTopic = ''; // Clear the current topic filter
+            currentPage = 1; // Reset to the first page
+            fetchMessages(currentPage); // Fetch all messages
+        });
+
+        // Handle pagination controls
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentPage += 1;
+            fetchMessages(currentPage, currentTopic);
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                fetchMessages(currentPage, currentTopic);
+            }
+        });
+
+        // Refresh messages manually
+        document.getElementById('refreshMessagesBtn').addEventListener('click', () => {
+            fetchMessages(currentPage, currentTopic);
+        });
+    
+        // Fetch messages for the current page and topic
+        function fetchMessages(page, topic = '') {
+            let url = `/get-messages?page=${page}`;
+            if (topic) {
+                url += `&topic=${topic}`; // Append the topic filter to the query
+            }
+        
+            fetch(url)
+                .then(response => response.json())
+                .then(messages => {
+                    const messageList = document.getElementById('messages');
+                    messageList.innerHTML = ''; // Clear only the message list
+
+                    messages.forEach(msg => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Topic: ${msg.topic} - Message: ${msg.message}`;
+                        messageList.appendChild(listItem);
+                    });
+
+                    document.getElementById('currentPage').textContent = `Page ${page}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                });
+        }
+    
+        // Filter by topic
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            const topic = document.getElementById('topicFilter').value;
+            if (topic) {
+                currentTopic = topic; // Set the current topic filter
+                currentPage = 1; // Reset to the first page when filtering
+                fetchMessages(currentPage, currentTopic); // Fetch filtered messages
+            } else {
+                alert('Please enter a topic to filter by');
+            }
+        });
+    
+        // Call fetchMessages initially to load the first page of messages
+        fetchMessages(currentPage);
+    
+        // Receive MQTT messages in real-time and display them
+        socket.on('mqtt_message', (data) => {
+            const realTimeMessageList = document.getElementById('realTimeMessages');
+            const listItem = document.createElement('li');
+            listItem.textContent = `Topic: ${data.topic} - Message: ${data.message}`;
+            realTimeMessageList.appendChild(listItem);
+        });
+    </script>
+</body>
+</html>
