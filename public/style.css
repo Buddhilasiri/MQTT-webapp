@@ -1,17 +1,40 @@
+:root {
+    --bg-color: #f4f4f4; /* Light theme background */
+    --text-color: #000; /* Light theme text */
+    --container-bg: #fff; /* Light theme container background */
+    --button-bg: #007bff; /* Light theme button background */
+    --button-hover: #0056b3;
+    --message-bg: #f4f4f4;
+    --border-color: #007bff;
+}
+
+body.dark-mode {
+    --bg-color: #121212; /* Dark theme background */
+    --text-color: #8d8f85; /* Dark theme text */
+    --container-bg: #3a3535; /* Dark theme container background */
+    --button-bg: #00aaff; /* Dark theme button background */
+    --button-hover: #0077cc;
+    --message-bg: #444;
+    --border-color: #00aaff;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow-y: auto; /* Enable vertical scrolling */
+    margin: 0;
+    height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+    align-items: flex-start; /* Align items at the start for scroll */
 }
 
 .container {
-    width: 600px;
+    max-height: 90vh; /* Adjust container height */
+    overflow-y: auto; /* Enable scrolling */
     padding: 20px;
-    background-color: white;
+    background-color: var(--container-bg);
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
 }
@@ -37,7 +60,7 @@ input[type="text"] {
 button {
     padding: 10px;
     font-size: 16px;
-    background-color: #007bff;
+    background-color: var(--button-bg);
     color: white;
     border: none;
     cursor: pointer;
@@ -45,15 +68,15 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: var(--button-hover);
 }
 
 .message-display,
 .real-time-message-display {
     margin-top: 20px;
-    max-height: 200px; /* Set a fixed height */
-    overflow-y: auto; /* Enable vertical scrolling */
-    border: 1px solid #ccc; /* Optional: Add a border for visibility */
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
 }
 
 ul {
@@ -63,9 +86,9 @@ ul {
 
 li {
     padding: 10px;
-    background-color: #f4f4f4;
+    background-color: var(--message-bg);
     margin-bottom: 10px;
-    border-left: 4px solid #007bff;
+    border-left: 4px solid var(--border-color);
 }
 
 .pagination {
@@ -73,3 +96,39 @@ li {
     justify-content: center;
     margin-top: 20px;
 }
+
+.unsubscribe-btn {
+    margin-left: 10px;
+    padding: 5px;
+    font-size: 14px;
+    background-color: #ff6d2a; /* Red color for unsubscribe */
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.unsubscribe-btn:hover {
+    background-color: #c82333;
+}
+
+.theme-toggle {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+    background-color: var(--container-bg); /* Match the container background */
+    padding: 15px; /* Add some padding */
+}
+
+#topics-list {
+    max-height: 200px; /* Adjust this value as needed */
+    overflow-y: auto;
+}
+
+

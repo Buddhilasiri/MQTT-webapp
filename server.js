@@ -74,7 +74,17 @@ io.on('connection', (socket) => {
             }
         });
     });
+
+    // Listen for unsubscription requests from the client
+    socket.on('unsubscribe', (topic) => {
+        mqttClient.unsubscribe(topic, (err) => {
+            if (!err) {
+                console.log(`Unsubscribed from topic: ${topic}`);
+            }
+        });
+    });
 });
+
 
 // Route to handle paginated messages
 app.get('/get-messages', (req, res) => {

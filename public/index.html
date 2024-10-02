@@ -4,163 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MQTT WebApp</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>MQTT WebApp</h1>
+    <div class="container my-4">
+        <!-- Header Section -->
+        <div class="row">
+            <div class="col-md-12">
+                <h1>MQTT WebApp</h1>
+                <div class="d-flex justify-content-end align-items-center" style="margin-top: -10px; margin-bottom: 15px;">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="modeOptions" id="lightMode" value="light">
+                        <label class="form-check-label" for="lightMode">
+                            <i class="bi bi-lightbulb"></i>
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="modeOptions" id="darkMode" value="dark">
+                        <label class="form-check-label" for="darkMode">
+                            <i class="bi bi-lightbulb-fill"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>    
 
         <!-- Topic Subscription -->
-        <div class="form-group">
-            <label for="topic">Subscribe to Topics:</label>
-            <input type="text" id="topic" placeholder="Enter MQTT Topic">
-            <button id="subscribeBtn">Subscribe</button>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="input-group">
+                    <input type="text" id="topic" class="form-control" placeholder="Enter MQTT Topic">
+                    <div class="input-group-append">
+                        <button id="subscribeBtn" class="btn btn-primary">Subscribe</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Subscribed Topics -->
-        <div class="subscribed-topics">
-            <h2>Subscribed Topics</h2>
-            <ul id="topics-list"></ul>
+        <div class="row mb-3">
+            <div class="col-12">
+                <h2>Subscribed Topics</h2>
+                <ul id="topics-list" class="list-group"></ul>
+            </div>
         </div>
 
         <!-- Filtering by Topic -->
-        <div class="form-group">
-            <label for="topicFilter">Filter by Topic:</label>
-            <input type="text" id="topicFilter" placeholder="Enter topic to filter">
-            <button id="filterBtn">Filter</button>
-        </div>
-        
-        <!-- Search for Messages -->
-        <div class="form-group">
-            <label for="searchInput">Search Messages:</label>
-            <input type="text" id="searchInput" placeholder="Enter keyword to search">
-            <button id="searchBtn">Search</button>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="topicFilter" class="form-control" placeholder="Enter topic to filter">
+                    <div class="input-group-append">
+                        <button id="filterBtn" class="btn btn-secondary">Filter</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search for Messages -->
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Enter keyword to search">
+                    <div class="input-group-append">
+                        <button id="searchBtn" class="btn btn-info">Search</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Clear filter button -->
-        <div class="form-group">
-            <button id="clearFilterBtn">Clear Filter</button>
+        <div class="row mb-3">
+            <div class="col-12 text-center">
+                <button id="clearFilterBtn" class="btn btn-warning">Clear Filter</button>
+            </div>
         </div>
 
         <!-- Message Display -->
-        <div class="message-display">
-            <h2>Messages</h2>
-            <ul id="messages"></ul>
+        <div class="row">
+            <div class="col-12">
+                <div class="message-display my-3 p-3 bg-light rounded">
+                    <h2>Messages</h2>
+                    <ul id="messages" class="list-group"></ul>
+                </div>
+            </div>
         </div>
 
         <!-- Real-Time Message Display -->
-        <div class="real-time-message-display">
-            <h2>Real-Time Messages</h2>
-            <ul id="realTimeMessages"></ul>
+        <div class="row">
+            <div class="col-12">
+                <div class="real-time-message-display my-3 p-3 bg-light rounded">
+                    <h2>Real-Time Messages</h2>
+                    <ul id="realTimeMessages" class="list-group"></ul>
+                </div>
+            </div>
         </div>
 
         <!-- Pagination Controls -->
-        <div class="pagination">
-            <button id="prevBtn">Previous</button>
-            <span id="currentPage">Page 1</span>
-            <button id="nextBtn">Next</button>
-            <button id="refreshMessagesBtn">Refresh Messages</button>
+        <div class="row">
+            <div class="col-12 text-center">
+                <button id="prevBtn" class="btn btn-outline-primary">Previous</button>
+                <span id="currentPage">Page 1</span>
+                <button id="nextBtn" class="btn btn-outline-primary">Next</button>
+            </div>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-    
-        let currentPage = 1; // Current page tracker
-        let currentTopic = ''; // Filtered topic tracker
-    
-        // Subscribe to a topic
-        document.getElementById('subscribeBtn').addEventListener('click', () => {
-            const topic = document.getElementById('topic').value;
-            if (topic) {
-                socket.emit('subscribe', topic);
-                alert(`Subscribed to topic: ${topic}`);
-                
-                // Add the topic to the subscribed topics list
-                const topicsList = document.getElementById('topics-list');
-                const listItem = document.createElement('li');
-                listItem.textContent = topic;
-                topicsList.appendChild(listItem);
-                
-                // Clear the input field
-                document.getElementById('topic').value = '';
-            }
-        });
-
-        // Clear topic filter
-        document.getElementById('clearFilterBtn').addEventListener('click', () => {
-            currentTopic = ''; // Clear the current topic filter
-            currentPage = 1; // Reset to the first page
-            fetchMessages(currentPage); // Fetch all messages
-        });
-
-        // Handle pagination controls
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            currentPage += 1;
-            fetchMessages(currentPage, currentTopic);
-        });
-
-        document.getElementById('prevBtn').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage -= 1;
-                fetchMessages(currentPage, currentTopic);
-            }
-        });
-
-        // Refresh messages manually
-        document.getElementById('refreshMessagesBtn').addEventListener('click', () => {
-            fetchMessages(currentPage, currentTopic);
-        });
-    
-        // Fetch messages for the current page and topic
-        function fetchMessages(page, topic = '') {
-            let url = `/get-messages?page=${page}`;
-            if (topic) {
-                url += `&topic=${topic}`; // Append the topic filter to the query
-            }
-        
-            fetch(url)
-                .then(response => response.json())
-                .then(messages => {
-                    const messageList = document.getElementById('messages');
-                    messageList.innerHTML = ''; // Clear only the message list
-
-                    messages.forEach(msg => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `Topic: ${msg.topic} - Message: ${msg.message}`;
-                        messageList.appendChild(listItem);
-                    });
-
-                    document.getElementById('currentPage').textContent = `Page ${page}`;
-                })
-                .catch(error => {
-                    console.error('Error fetching messages:', error);
-                });
-        }
-    
-        // Filter by topic
-        document.getElementById('filterBtn').addEventListener('click', () => {
-            const topic = document.getElementById('topicFilter').value;
-            if (topic) {
-                currentTopic = topic; // Set the current topic filter
-                currentPage = 1; // Reset to the first page when filtering
-                fetchMessages(currentPage, currentTopic); // Fetch filtered messages
-            } else {
-                alert('Please enter a topic to filter by');
-            }
-        });
-    
-        // Call fetchMessages initially to load the first page of messages
-        fetchMessages(currentPage);
-    
-        // Receive MQTT messages in real-time and display them
-        socket.on('mqtt_message', (data) => {
-            const realTimeMessageList = document.getElementById('realTimeMessages');
-            const listItem = document.createElement('li');
-            listItem.textContent = `Topic: ${data.topic} - Message: ${data.message}`;
-            realTimeMessageList.appendChild(listItem);
-        });
-    </script>
+    <script src="app.js"></script> <!-- Assuming this contains your JavaScript code -->
 </body>
 </html>
